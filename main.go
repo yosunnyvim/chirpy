@@ -32,7 +32,7 @@ func main() {
 	})
 	apiCfg := apiConfig{
 		dbQueries: dbQueries,
-		platform: platform,
+		platform:  platform,
 	}
 	handler := http.StripPrefix("/app/", http.FileServer(http.Dir("./assets/")))
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handler))
@@ -40,6 +40,7 @@ func main() {
 	mux.HandleFunc("POST /admin/reset", apiCfg.metricsRest)
 	mux.HandleFunc("POST /api/chirps", apiCfg.createChirp)
 	mux.HandleFunc("POST /api/users", apiCfg.createUser)
+	mux.HandleFunc("GET /api/chirps", apiCfg.getChirps)
 	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)
