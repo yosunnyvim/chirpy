@@ -1,12 +1,15 @@
 package main
 
 import (
+	"MODULE_PATH/internal/auth"
+	"MODULE_PATH/internal/database"
 	"encoding/json"
 	"net/http"
 )
 
 type createUserRequest struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (cfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +21,16 @@ func (cfg *apiConfig) createUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cnx := r.Context()
-	user, err := cfg.dbQueries.CreateUser(cnx, parm.Email)
+	hashedPassword, err := auth.HashPassword(parm.Password)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Invalid password")
+		return
+	}
+
+	user, err := cfg.dbQueries.CreateUser(cnx, database.CreateUserParams{
+		Email:          parm.Email,
+		HashedPassword: hashedPassword,
+	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create user")
 		return

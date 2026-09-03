@@ -1,7 +1,6 @@
 package main
 
-import (
-	"database/sql"
+import ( "database/sql"
 	"net/http"
 	"os"
 
@@ -25,15 +24,11 @@ func main() {
 		Addr:    ":8080",
 		Handler: mux,
 	}
-	mux.HandleFunc("GET /api/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
 	apiCfg := apiConfig{
 		dbQueries: dbQueries,
 		platform:  platform,
 	}
+	mux.HandleFunc("GET /api/healthz", apiCfg.healthz )
 	handler := http.StripPrefix("/app/", http.FileServer(http.Dir("./assets/")))
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handler))
 	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
@@ -42,6 +37,7 @@ func main() {
 	mux.HandleFunc("POST /api/users", apiCfg.createUser)
 	mux.HandleFunc("GET /api/chirps", apiCfg.getChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", apiCfg.getChirp)
+	mux.HandleFunc("POST /api/login", apiCfg.login)
 	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)
