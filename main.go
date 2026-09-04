@@ -19,6 +19,7 @@ func main() {
 	defer db.Close()
 	dbQueries := database.New(db)
 	platform := os.Getenv("PLATFORM")
+	JWTSecret:= os.Getenv("JWT_SECRET")
 	mux := http.NewServeMux()
 	server := http.Server{
 		Addr:    ":8080",
@@ -27,6 +28,7 @@ func main() {
 	apiCfg := apiConfig{
 		dbQueries: dbQueries,
 		platform:  platform,
+		jwtSecret: JWTSecret,
 	}
 	mux.HandleFunc("GET /api/healthz", apiCfg.healthz )
 	handler := http.StripPrefix("/app/", http.FileServer(http.Dir("./assets/")))

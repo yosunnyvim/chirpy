@@ -1,16 +1,15 @@
 package main
 
 import (
+	"MODULE_PATH/internal/auth"
 	"MODULE_PATH/internal/database"
 	"encoding/json"
 	"net/http"
 	"unicode/utf8"
 
-	"github.com/google/uuid"
 )
 type createChirpRequest struct {
     Body   string    `json:"body"`
-    UserID uuid.UUID `json:"user_id"`
 }
 func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 
@@ -23,6 +22,16 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
+	token,err:=auth.GetBearerToken(r.Header)
+	if err!=nil{
+		respondWithError(w, http.StatusUnauthorized, "couldn't get token")
+		return
+	}
+	valid,err:=auth.ValidateJWT(token, cfg.jwtSecret)
+	if err!=nil{
+		respondWithError(w, http.StatusUnauthorized, "couldn't validate token")
+		return
+	}
 	len := utf8.RuneCountInString(jreq.Body)
 	if len > 140 {
 		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
@@ -32,7 +41,7 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 
 	chirp, err := cfg.dbQueries.CreateChirp(r.Context(),database.CreateChirpParams{
 		Body: cleaned,
-		UserID: jreq.UserID,
+		UserID: valid,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
