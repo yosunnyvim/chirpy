@@ -46,6 +46,7 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", apiCfg.refresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.revoke)
 	mux.HandleFunc("PUT /api/users", apiCfg.updateData)
+	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.deleteChirp)
 	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)
