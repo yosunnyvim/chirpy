@@ -2,6 +2,7 @@ package main
 
 import (
 	"MODULE_PATH/internal/auth"
+	"MODULE_PATH/internal/database"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -11,14 +12,14 @@ import (
 type loginUserRequest struct{
 	Email    string `json:"email"`
 	Password string `json:"password"`
-	ExpiresInSeconds int `json:"expires_in_seconds"`
 }
 type ResponseLogin struct{
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Email     string    `json:"email"`
-	Token     string    `json:"token"` 
+	ID            uuid.UUID `json:"id"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	Email         string    `json:"email"`
+	Token         string    `json:"token"` 
+	RefresshToken string    `json:"refresh_token"`
 }
 func (cfg *apiConfig) login(w http.ResponseWriter, r *http.Request){
 	var parm loginUserRequest
@@ -42,18 +43,25 @@ func (cfg *apiConfig) login(w http.ResponseWriter, r *http.Request){
 			respondWithError(w, http.StatusUnauthorized, "Incorrect email or password")
 			return
 	}	
-	expiresTime:=parm.ExpiresInSeconds
-	if expiresTime == 0{
-		expiresTime =3600 
-	}
-	if parm.ExpiresInSeconds>3600{
-		expiresTime=3600
-	}
-	duration:= time.Duration(expiresTime)*time.Second
+	duration := time.Hour
 	JWT,err:=auth.MakeJWT(user.ID, cfg.jwtSecret, duration)
 	if err!=nil{
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create JWT")
 		return 
+	}
+	refreshToken:=auth.MakeRefreshToken()
+	expiresAt := time.Now().Add(60 * 24 * time.Hour)
+	_, err = cfg.dbQueries.CreateRefreshToken(
+			r.Context(),
+			database.CreateRefreshTokenParams{
+					Token:     refreshToken,
+					UserID:    user.ID,
+					ExpiresAt: expiresAt,
+			},
+	)
+	if err!=nil{
+		respondWithError(w, http.StatusInternalServerError, "couldn't create refreshToken")
+		return
 	}
 	responseData:= ResponseLogin{
 		ID: user.ID,
@@ -61,6 +69,7 @@ func (cfg *apiConfig) login(w http.ResponseWriter, r *http.Request){
 		UpdatedAt: user.UpdatedAt,
 		Email: user.Email,
 		Token: JWT,	
+		RefresshToken: refreshToken,
 	}
 	respondWithJSON(w, http.StatusOK, responseData)
 
