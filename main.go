@@ -45,6 +45,7 @@ func main() {
 	mux.HandleFunc("POST /api/login", apiCfg.login)
 	mux.HandleFunc("POST /api/refresh", apiCfg.refresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.revoke)
+	mux.HandleFunc("PUT /api/users", apiCfg.updateData)
 	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)
