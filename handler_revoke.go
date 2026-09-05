@@ -11,8 +11,8 @@ func (cfg *apiConfig) revoke(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, "Unable to get token")
 		return
 	}
-	err=cfg.dbQueries.RevokeRefreshToken(r.Context(), token)
-	if err!=nil{
+	err = cfg.dbQueries.RevokeRefreshToken(r.Context(), token)
+	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Unable to revoke token")
 		return
 	}

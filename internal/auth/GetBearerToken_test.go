@@ -5,16 +5,17 @@ import (
 	"net/http"
 	"testing"
 )
-func TestGetBearerToken(t *testing.T){
+
+func TestGetBearerToken(t *testing.T) {
 	headers := http.Header{}
-	bearer:= "Bearer TOKEN_STRING"
-	headers.Set("Authorization",bearer)
-	expected:="TOKEN_STRING"
-	result,err:=auth.GetBearerToken(headers)
-	if err!=nil{
-		t.Fatalf("Can't get bearer token %v",err)
+	bearer := "Bearer TOKEN_STRING"
+	headers.Set("Authorization", bearer)
+	expected := "TOKEN_STRING"
+	result, err := auth.GetBearerToken(headers)
+	if err != nil {
+		t.Fatalf("Can't get bearer token %v", err)
 	}
-	if result!=expected{
+	if result != expected {
 		t.Fatalf("got %q, want %q", result, expected)
 	}
 }

@@ -7,9 +7,9 @@ func (cfg *apiConfig) metricsRest(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	cnx:= r.Context()
-	err:= cfg.dbQueries.DeleteUsers(cnx)	
-	if err!= nil{
+	cnx := r.Context()
+	err := cfg.dbQueries.DeleteUsers(cnx)
+	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't delete users")
 		return
 	}

@@ -25,4 +25,3 @@ func TestValidJWT(t *testing.T) {
 		t.Errorf("got %v, want %v", gotID, userID)
 	}
 }
-

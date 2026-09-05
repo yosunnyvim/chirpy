@@ -1,6 +1,7 @@
 package main
 
-import ( "database/sql"
+import (
+	"database/sql"
 	"net/http"
 	"os"
 
@@ -13,7 +14,8 @@ func main() {
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
 	platform := os.Getenv("PLATFORM")
-	JWTSecret:= os.Getenv("JWT_SECRET")
+	JWTSecret := os.Getenv("JWT_SECRET")
+	POLKA_key := os.Getenv("POLKA_KEY")
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		panic(err)
@@ -31,9 +33,10 @@ func main() {
 		dbQueries: dbQueries,
 		platform:  platform,
 		jwtSecret: JWTSecret,
+		POLKA_KEY: POLKA_key,
 	}
 
-	mux.HandleFunc("GET /api/healthz", apiCfg.healthz )
+	mux.HandleFunc("GET /api/healthz", apiCfg.healthz)
 	handler := http.StripPrefix("/app/", http.FileServer(http.Dir("./assets/")))
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(handler))
 	mux.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
@@ -47,6 +50,7 @@ func main() {
 	mux.HandleFunc("POST /api/revoke", apiCfg.revoke)
 	mux.HandleFunc("PUT /api/users", apiCfg.updateData)
 	mux.HandleFunc("DELETE /api/chirps/{chirpID}", apiCfg.deleteChirp)
+	mux.HandleFunc("POST /api/polka/webhooks", apiCfg.updateRed)
 	err = server.ListenAndServe()
 	if err != nil {
 		panic(err)

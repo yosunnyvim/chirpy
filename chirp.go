@@ -11,5 +11,5 @@ type Chirp struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 	Body      string    `json:"body"`
-  UserID uuid.UUID    `json:"user_id"`
+	UserID    uuid.UUID `json:"user_id"`
 }

@@ -6,13 +6,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"unicode/utf8"
-
 )
-type createChirpRequest struct {
-    Body   string    `json:"body"`
-}
-func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 
+type createChirpRequest struct {
+	Body string `json:"body"`
+}
+
+func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	jreq := createChirpRequest{}
@@ -22,13 +22,13 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-	token,err:=auth.GetBearerToken(r.Header)
-	if err!=nil{
+	token, err := auth.GetBearerToken(r.Header)
+	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "couldn't get token")
 		return
 	}
-	valid,err:=auth.ValidateJWT(token, cfg.jwtSecret)
-	if err!=nil{
+	valid, err := auth.ValidateJWT(token, cfg.jwtSecret)
+	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "couldn't validate token")
 		return
 	}
@@ -39,20 +39,20 @@ func (cfg *apiConfig) createChirp(w http.ResponseWriter, r *http.Request) {
 	}
 	cleaned := replaceBadWords(jreq.Body)
 
-	chirp, err := cfg.dbQueries.CreateChirp(r.Context(),database.CreateChirpParams{
-		Body: cleaned,
+	chirp, err := cfg.dbQueries.CreateChirp(r.Context(), database.CreateChirpParams{
+		Body:   cleaned,
 		UserID: valid,
 	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't create chirp")
 		return
 	}
-	responseChirp :=Chirp{
-		ID: chirp.ID,
+	responseChirp := Chirp{
+		ID:        chirp.ID,
 		CreatedAt: chirp.CreatedAt,
 		UpdatedAt: chirp.UpdatedAt,
-		Body: chirp.Body,
-		UserID: chirp.UserID,
-	}	
+		Body:      chirp.Body,
+		UserID:    chirp.UserID,
+	}
 	respondWithJSON(w, http.StatusCreated, responseChirp)
 }
